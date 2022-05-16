@@ -1,0 +1,44 @@
+classDiagram
+direction TB
+ISorter <|.. ListSorter
+ISorter <|.. ArraySorter
+class ISorter~TCollection~ {
+    +TCollection BubbleSort(TCollection input)
+    +TCollection MergeSort(TCollection input)
+    +TCollection QuickSort(TCollection input)
+}
+class ListSorter {
+    +List~int~ BubbleSort(List~int~ input)
+    +List~int~ MergeSort(List~int~ input)
+    +List~int~ QuickSort(List~int~ input)
+}
+class ArraySorter {
+    +int[] BubbleSort(int[] input)
+    +int[] MergeSort(int[] input)
+    +int[] QuickSort(int[] input)
+}
+
+IPopulatedCollectionProvider <|.. PopulatedIntListProvider
+IPopulatedCollectionProvider <|.. PopulatedIntArrayProvider
+class IPopulatedCollectionProvider~TCollection~ {
+    +TCollection Get(int size)
+}
+class PopulatedIntListProvider~TCollection~ {
+    +int[] Get(int size)
+}
+class PopulatedIntArrayProvider~TCollection~ {
+    +List~int~ Get(int size)
+}
+
+SorterBenchmarks *-- ISorter
+SorterBenchmarks *-- IPopulatedCollectionProvider
+
+class SorterBenchmarks~TCollection~ {
+    + int Size
+    - ISorter~TCollection~ sorter
+    - IPopulatedCollectionProvider~TCollection~ provider
+    + Setup()
+    + BubbleSort()
+    + MergeSort()
+    + QuickSort()
+}
