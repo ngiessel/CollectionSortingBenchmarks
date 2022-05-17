@@ -6,9 +6,10 @@ namespace CollectionSortingBenchmarks.Benchmarks
 {
 
     [MemoryDiagnoser]
-    public abstract class SorterBenchmarkBase<CollectionType> where CollectionType : ICollection<int>
+    public abstract class SorterBenchmarkBase<SorterType, CollectionType> where CollectionType : ICollection<int> where SorterType : ISorter<CollectionType>
     {
         private ISorter<CollectionType> _sorter;
+        private IPopulatedCollectionProvider<CollectionType> _provider;
         private CollectionType _collection;
             
         [Params(10, 30, 100, 500, 5000)] //30, 100, 500, 5000
@@ -17,50 +18,35 @@ namespace CollectionSortingBenchmarks.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            var sorterType = typeof(Program).Assembly.GetTypes()
-                .Where(x =>
-                    !x.IsAbstract &&
-                    !x.IsInterface &&
-                    x.GetInterfaces().Any(i =>
-                        i.IsGenericType &&
-                        i == typeof(ISorter<CollectionType>))).FirstOrDefault();
-
             var providerType = typeof(Program).Assembly.GetTypes()
-                .Where(x =>
+                .FirstOrDefault(x =>
                     !x.IsAbstract &&
                     !x.IsInterface &&
                     x.GetInterfaces().Any(i =>
                         i.IsGenericType &&
-                        i == typeof(IPopulatedCollectionProvider<CollectionType>))).FirstOrDefault();
-
+                        i == typeof(IPopulatedCollectionProvider<CollectionType>)));
             
-            if (sorterType is null || providerType is null)
+            if (providerType is null)
             {
                 throw new InvalidOperationException($"Sorter or PopulatedCollectionProvider of {typeof(CollectionType)} not found");
             }
                 
-            _sorter = (Activator.CreateInstance(sorterType) as ISorter<CollectionType>)!;            
-            var provider = (Activator.CreateInstance(providerType) as IPopulatedCollectionProvider<CollectionType>)!;            
+            _sorter = (Activator.CreateInstance(typeof(SorterType)) as ISorter<CollectionType>)!;
+            _provider = (Activator.CreateInstance(providerType) as IPopulatedCollectionProvider<CollectionType>)!;
             
-            _collection = provider.Get(Size);
+            _collection = _provider.Get(Size);
+        }
+        
+        [IterationSetup]
+        public void IterationSetup()
+        {
+            _collection = _provider.Get(Size);
         }
 
         [Benchmark]
-        public void BubbleSort()
-        {
-            var sorted = _sorter.BubbleSort(_collection);
-        }
-
-        [Benchmark]
-        public void MergeSort()
-        {
-            var sorted = _sorter.MergeSort(_collection);
-        }
-
-        [Benchmark]
-        public void QuickSort()
-        {
-            var sorted = _sorter.QuickSort(_collection);
+        public void Sort()
+        {            
+            _sorter.Sort(ref _collection);
         }
     }
 }
