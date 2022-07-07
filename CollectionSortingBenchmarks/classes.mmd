@@ -1,44 +1,72 @@
 classDiagram
 direction TB
-ISorter <|.. ListSorter
-ISorter <|.. ArraySorter
 class ISorter~TCollection~ {
-    +TCollection BubbleSort(TCollection input)
-    +TCollection MergeSort(TCollection input)
-    +TCollection QuickSort(TCollection input)
+    +Sort(ref TCollection input)
 }
-class ListSorter {
-    +List~int~ BubbleSort(List~int~ input)
-    +List~int~ MergeSort(List~int~ input)
-    +List~int~ QuickSort(List~int~ input)
+<<interface>> ISorter~TCollection~
+
+class IIntArraySorter {
+    +Sort(int[] input)
 }
-class ArraySorter {
-    +int[] BubbleSort(int[] input)
-    +int[] MergeSort(int[] input)
-    +int[] QuickSort(int[] input)
+<<interface>> IIntArraySorter
+
+class IIntListSorter {
+    +Sort(List~int~ input)
+}
+<<interface>> IIntListSorter
+
+ISorter <|.. IIntArraySorter
+ISorter <|.. IIntListSorter
+
+class IntListBubbleSorter {
+    + Sort(List~int~ input)
+}
+class IntListMergeSorter {
+    + Sort(List~int~ input)
+}
+class IntListQuickSorter {
+    + Sort(List~int~ input)
+}
+
+IIntListSorter <|.. IntListBubbleSorter
+IIntListSorter <|.. IntListMergeSorter
+IIntListSorter <|.. IntListQuickSorter
+
+class IntArrayBubbleSorter {
+    + Sort(int[] input)
+}
+class IntArrayMergeSorter {
+    + Sort(int[] input)
+}
+class IntArrayQuickSorter {
+    + Sort(int[] input)
+}
+
+IIntArraySorter <|.. IntArrayBubbleSorter
+IIntArraySorter <|.. IntArrayMergeSorter
+IIntArraySorter <|.. IntArrayQuickSorter
+
+class IPopulatedCollectionProvider~TCollection~ {
+    +TCollection Get(int size)
+}
+class PopulatedIntListProvider {
+    +int[] Get(int size)
+}
+class PopulatedIntArrayProvider {
+    +List~int~ Get(int size)
 }
 
 IPopulatedCollectionProvider <|.. PopulatedIntListProvider
 IPopulatedCollectionProvider <|.. PopulatedIntArrayProvider
-class IPopulatedCollectionProvider~TCollection~ {
-    +TCollection Get(int size)
-}
-class PopulatedIntListProvider~TCollection~ {
-    +int[] Get(int size)
-}
-class PopulatedIntArrayProvider~TCollection~ {
-    +List~int~ Get(int size)
-}
-
-SorterBenchmarks *-- ISorter
-SorterBenchmarks *-- IPopulatedCollectionProvider
 
 class SorterBenchmarks~TCollection~ {
     + int Size
     - ISorter~TCollection~ sorter
     - IPopulatedCollectionProvider~TCollection~ provider
     + Setup()
-    + BubbleSort()
-    + MergeSort()
-    + QuickSort()
+    + Sort()
 }
+<<abstract>> SorterBenchmarks
+
+SorterBenchmarks *-- ISorter
+SorterBenchmarks *-- IPopulatedCollectionProvider
